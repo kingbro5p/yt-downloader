@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube Video Downloader Pro</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        * {
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #311042 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            color: #fff;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.125);
+            border-radius: 24px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, #ff4b2b 0%, #ff416c 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .custom-input-group {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 50px;
+            padding: 6px;
+            transition: all 0.3s ease;
+        }
+
+        .custom-input-group:focus-within {
+            border-color: #ff416c;
+            box-shadow: 0 0 20px rgba(255, 65, 108, 0.3);
+        }
+
+        .custom-input {
+            background: transparent !important;
+            border: none !important;
+            color: #fff !important;
+            padding-left: 20px;
+            font-size: 0.95rem;
+        }
+
+        .custom-input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .custom-input:focus {
+            box-shadow: none !important;
+        }
+
+        .btn-gradient {
+            background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);
+            border: none;
+            color: white;
+            border-radius: 50px;
+            padding: 12px 30px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-gradient:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(255, 65, 108, 0.4);
+            color: #fff;
+        }
+
+        .feature-badge {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 10px 15px;
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .code-box {
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: #38bdf8;
+            font-family: monospace;
+            font-size: 0.85rem;
+        }
+
+        .loading-overlay {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-7 col-md-9 text-center">
+            
+            <div class="mb-3">
+                <i class="fa-brands fa-youtube text-danger display-3"></i>
+            </div>
+
+            <h1 class="fw-bold mb-2">YT Downloader <span class="gradient-text">PRO</span></h1>
+            <p class="text-white-50 mb-4">যেকোনো ইউটিউব ভিডিও ডাউনলোড করুন দ্রুত এবং সহজ উপায়ে</p>
+
+            {% with messages = get_flashed_messages() %}
+              {% if messages %}
+                <div class="alert alert-danger bg-danger text-white border-0 rounded-4 mb-4 shadow">
+                  {% for message in messages %}
+                    <i class="fa-solid fa-circle-exclamation me-2"></i> {{ message }}
+                  {% endfor %}
+                </div>
+              {% endif %}
+            {% endwith %}
+
+            <div class="glass-card p-4 p-md-5 mb-4">
+                <form action="/" method="GET" id="downloadForm">
+                    <div class="custom-input-group d-flex align-items-center mb-3">
+                        <i class="fa-solid fa-link ms-3 text-white-50"></i>
+                        <input type="url" name="url" class="form-control custom-input" placeholder="ইউটিউব ভিডিও লিংক পেস্ট করুন..." required autocomplete="off">
+                        <button type="submit" class="btn btn-gradient d-none d-md-block">
+                            <i class="fa-solid fa-download me-1"></i> ডাউনলোড
+                        </button>
+                    </div>
+                    <button type="submit" class="btn btn-gradient w-100 d-md-none py-3">
+                        <i class="fa-solid fa-download me-1"></i> ডাউনলোড করুন
+                    </button>
+                </form>
+
+                <div id="loadingStatus" class="loading-overlay mt-4 text-warning">
+                    <div class="spinner-border spinner-border-sm me-2" role="status"></div>
+                    ভিডিও প্রসেস করা হচ্ছে, অনুগ্রহ করে অপেক্ষা করুন...
+                </div>
+
+                <div class="row g-2 mt-4 pt-2 border-top border-secondary border-opacity-25">
+                    <div class="col-4">
+                        <div class="feature-badge">
+                            <i class="fa-solid fa-bolt text-warning mb-1 d-block fs-5"></i> হাই স্পিড
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="feature-badge">
+                            <i class="fa-solid fa-shield-halved text-success mb-1 d-block fs-5"></i> ১০০% নিরাপদ
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="feature-badge">
+                            <i class="fa-solid fa-infinity text-info mb-1 d-block fs-5"></i> আনলিমিটেড
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-card p-3 text-start">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <span class="small text-white-50"><i class="fa-solid fa-code me-1"></i> API URL Endpoint:</span>
+                </div>
+                <div class="code-box p-3 text-break">
+                    <code>GET https://your-domain.up.railway.app/?url=<span class="text-warning">{youtube_video_url}</span></code>
+                </div>
+            </div>
+
+            <p class="small text-white-50 mt-4">© YT Downloader • All Rights Reserved</p>
+
+        </div>
+    </div>
+</div>
+
+<script>
+    document.getElementById('downloadForm').addEventListener('submit', function() {
+        document.getElementById('loadingStatus').style.display = 'block';
+    });
+</script>
+
+</body>
+</html>
